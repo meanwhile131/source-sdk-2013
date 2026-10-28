@@ -1,0 +1,45 @@
+name: Build video_webm.so
+
+on:
+  push:
+    branches: [ ci ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build in Steam Runtime sniper SDK
+        env:
+          # VPC crashes in its default build mode; the ninja generator needs
+          # this set explicitly.
+          VPC_NINJA_BUILD_MODE: release
+        run: |
+          set -euo pipefail
+
+          IMAGE=registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest
+
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/src" \
+            -w /src \
+            -e VPC_NINJA_BUILD_MODE \
+            "$IMAGE" \
+            bash -lc '
+              set -euo pipefail
+              cd src
+              mkdir -p _vpc_/ninja
+              ./devtools/bin/vpc /hl2mp /tf /linux64 /ninja /define:SOURCESDK \
+                +everything /mksln _vpc_/ninja/sdk_everything_release
+              ninja -f _vpc_/ninja/sdk_everything_release.ninja video_webm
+            '
+      - name: Release
+        env:
+          SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create --generate-notes ${SHA:0:7} game/bin/linux64/video_webm.so
+
