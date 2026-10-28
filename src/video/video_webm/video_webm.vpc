@@ -1,0 +1,60 @@
+//-----------------------------------------------------------------------------
+//	video_webm.vpc
+//
+//	Project Script
+//
+//  Description:		WebM video sub-system (for video services system)
+//
+//  video_services loads this module as bin/<platform>/video_webm.so when the
+//  engine needs to create WebM movies (for example, "startmovie <name> webm").
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Include "$SRCDIR\vpc_scripts\source_dll_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\video;$SRCDIR\thirdparty\libwebm"
+	}
+}
+
+$Project "video_webm"
+{
+	$Folder	"Link Libraries"
+	{
+		// Link the codecs statically.  The game ships its own libvpx and the
+		// ABI of that copy may not match the SDK headers (TF2 ships libvpx
+		// 1.10 while the sniper SDK provides 1.9 headers), which makes
+		// vpx_codec_enc_init() fail at runtime.
+		$Lib	"$LIBCOMMON\libvpx"
+		$Lib	"$LIBCOMMON\libvorbisenc"
+		$Lib	"$LIBCOMMON\libvorbis"
+		$Lib	"$LIBCOMMON\libogg"
+		$Lib	"$LIBPUBLIC\tier2"
+	}
+
+	$Folder	"Source Files"
+	{
+		$file	"webm_video.cpp"
+		$file	"webm_recorder.cpp"
+	}
+
+	$Folder	"Header Files"
+	{
+		$file	"$SRCDIR\video\videosubsystem.h"
+		$file	"$SRCDIR\video\video_macros.h"
+		$file	"webm_video.h"
+		$file	"webm_recorder.h"
+		$file	"webm_common.h"
+		$file	"$SRCDIR\public\pixelwriter.h"
+	}
+
+	$Folder	"libwebm"
+	{
+		$file	"$SRCDIR\thirdparty\libwebm\mkvmuxer\mkvmuxer.cc"
+		$file	"$SRCDIR\thirdparty\libwebm\mkvmuxer\mkvmuxerutil.cc"
+		$file	"$SRCDIR\thirdparty\libwebm\mkvmuxer\mkvwriter.cc"
+	}
+}

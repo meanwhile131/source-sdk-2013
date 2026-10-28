@@ -120,6 +120,11 @@ $Project "vice"
 	"utils\vice\vice.vpc" [$WINDOWS]
 }
 
+$Project "video_webm"
+{
+	"video\video_webm\video_webm.vpc" [$LINUX64]
+}
+
 $Project "vrad_dll"
 {
 	"utils\vrad\vrad_dll.vpc" [$WINDOWS]
